@@ -1,0 +1,31 @@
+[
+  {
+    "metadata": { "eventType": "DetectionSummaryEvent", "eventCreationTime": 1789898400000 },
+    "event": {
+      "ComputerName": "WIN10-01",
+      "UserName": "alice",
+      "FileName": "powershell.exe",
+      "SHA256String": "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0",
+      "SeverityName": "Critical",
+      "Tactic": "Execution",
+      "Technique": "PowerShell",
+      "LocalIP": "10.0.1.5",
+      "DetectId": "ldt:demo:1",
+      "PatternDispositionDescription": "Process was quarantined"
+    }
+  },
+  {
+    "metadata": { "eventType": "DetectionSummaryEvent", "eventCreationTime": 1789898700000 },
+    "event": {
+      "ComputerName": "WIN10-02",
+      "UserName": "bob",
+      "FileName": "mimikatz.exe",
+      "SeverityName": "High",
+      "Tactic": "Credential Access",
+      "Technique": "OS Credential Dumping",
+      "LocalIP": "10.0.1.6",
+      "DetectId": "ldt:demo:2",
+      "PatternDispositionDescription": "Detection only"
+    }
+  }
+]

@@ -1,0 +1,10 @@
+# Reverse proxy + HTTPS อัตโนมัติ (ใช้กับโหมด SaaS: docker compose --profile saas up -d)
+#
+#   DOMAIN     ชื่อโดเมนของเซิร์ฟเวอร์ (เช่น logs.example.com) หรือ IP ของ VM
+#   CADDY_TLS  เว้นว่าง  → โดเมนจริง: Caddy ขอใบรับรอง Let's Encrypt ให้เอง (ต้องเปิดพอร์ต 80/443 และ DNS ชี้มาที่ VM แล้ว)
+#              tls internal → ใช้ใบรับรอง self-signed ของ Caddy (สำหรับ IP หรือไม่มีโดเมน: เบราว์เซอร์จะเตือน ให้กด "ดำเนินการต่อ")
+{$DOMAIN:localhost} {
+	{$CADDY_TLS}
+	encode gzip
+	reverse_proxy app:3000
+}

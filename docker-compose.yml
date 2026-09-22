@@ -1,0 +1,76 @@
+# Appliance:  docker compose up -d --build            (เว็บที่ http://<เครื่อง>:3000, syslog ที่พอร์ต 514)
+# SaaS:       docker compose --profile saas up -d --build   (เพิ่ม Caddy ทำ HTTPS ที่ 80/443 — ดู docs/setup_saas.md)
+#
+# ค่าทั้งหมดอ่านจากไฟล์ .env (สร้างด้วย ./run.sh หรือ make setup)
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:?ต้องตั้ง PGPASSWORD ใน .env (รัน ./run.sh เพื่อสร้าง .env ให้)}
+      POSTGRES_DB: ${PGDATABASE:-logdb}
+    # ไม่เปิดพอร์ต 5432 ออกภายนอก: ให้เข้าถึงได้เฉพาะจาก container อื่นในเครือข่ายเดียวกัน
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    image: logmgmt-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PGHOST: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      # APP_BIND=127.0.0.1 ในโหมด SaaS เพื่อให้เข้าผ่าน Caddy (HTTPS) เท่านั้น
+      - "${APP_BIND:-0.0.0.0}:3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  syslog:
+    image: logmgmt-app
+    restart: unless-stopped
+    command: ["node", "syslog-server.js"]
+    env_file: .env
+    environment:
+      PGHOST: postgres
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "${SYSLOG_PORT:-514}:${SYSLOG_PORT:-514}/udp"
+      - "${SYSLOG_PORT:-514}:${SYSLOG_PORT:-514}/tcp"
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["saas"]
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

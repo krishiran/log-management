@@ -1,0 +1,32 @@
+[
+  {
+    "CreationTime": "2026-09-20T10:05:00",
+    "Id": "8f1b3f0e-0000-4a55-a0aa-000000000001",
+    "Operation": "UserLoggedIn",
+    "RecordType": 15,
+    "ResultStatus": "Success",
+    "UserId": "bob@demo.local",
+    "ClientIP": "198.51.100.23",
+    "Workload": "AzureActiveDirectory"
+  },
+  {
+    "CreationTime": "2026-09-20T10:07:12",
+    "Id": "8f1b3f0e-0000-4a55-a0aa-000000000002",
+    "Operation": "UserLoginFailed",
+    "RecordType": 15,
+    "ResultStatus": "Failed",
+    "UserId": "bob@demo.local",
+    "ClientIP": "203.0.113.55:51234",
+    "Workload": "AzureActiveDirectory"
+  },
+  {
+    "CreationTime": "2026-09-20T10:15:40",
+    "Id": "8f1b3f0e-0000-4a55-a0aa-000000000003",
+    "Operation": "FileDeleted",
+    "RecordType": 6,
+    "UserId": "carol@demo.local",
+    "ClientIP": "198.51.100.77",
+    "Workload": "SharePoint",
+    "ObjectId": "https://demo.sharepoint.com/sites/hr/Shared Documents/salary.xlsx"
+  }
+]

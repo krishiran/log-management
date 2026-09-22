@@ -1,0 +1,27 @@
+{
+  "name": "next-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "init": "node scripts/init.js",
+    "syslog": "node syslog-server.js",
+    "test": "node --test \"tests/unit/*.test.js\"",
+    "test:integration": "node --test tests/integration/api.test.js",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "jose": "^6.2.12",
+    "next": "^16.3.5",
+    "pg": "^8.23.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "eslint-config-next": "16.3.2"
+  }
+}

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  unit:
+    name: Lint + Unit tests + Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - name: Build (ตรวจว่า Next.js build ผ่าน)
+        run: npm run build
+        env:
+          JWT_SECRET: ci-only-secret-0123456789abcdef
+
+  integration:
+    name: Integration tests (PostgreSQL จริง)
+    runs-on: ubuntu-latest
+    needs: unit
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: ci-db-password
+          POSTGRES_DB: logdb
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: ci-db-password
+      PGDATABASE: logdb
+      JWT_SECRET: ci-only-secret-0123456789abcdef
+      API_KEYS: demoA=ci-key-a,demoB=ci-key-b,*=ci-key-admin
+      ADMIN_PASSWORD: ci-admin-pw
+      VIEWERA_PASSWORD: ci-viewera-pw
+      VIEWERB_PASSWORD: ci-viewerb-pw
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run init
+      - name: เริ่มระบบ
+        run: |
+          nohup npx next start -p 3000 > next.log 2>&1 &
+          for i in $(seq 1 30); do curl -fs http://localhost:3000/api/health && break; sleep 2; done
+      - run: npm run test:integration
+      - name: แสดง log ของแอปเมื่อล้มเหลว
+        if: failure()
+        run: cat next.log

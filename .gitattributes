@@ -1,0 +1,7 @@
+# กัน Git บน Windows แปลงบรรทัดเป็น CRLF จนสคริปต์ shell/Dockerfile ทำงานบน Linux ไม่ได้
+* text=auto
+*.sh text eol=lf
+Dockerfile text eol=lf
+Caddyfile text eol=lf
+Makefile text eol=lf
+*.bat text eol=crlf

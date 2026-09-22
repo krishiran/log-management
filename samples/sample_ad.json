@@ -1,0 +1,13 @@
+{
+  "tenant": "demoA",
+  "source": "ad",
+  "event_id": 4625,
+  "event_type": "LogonFailed",
+  "severity": 8,
+  "user": "demo\\eve",
+  "host": "DC01",
+  "ip": "203.0.113.77",
+  "logon_type": 3,
+  "@timestamp": "2026-08-20T11:11:11Z",
+  "raw": "EventID 4625 LogonFailed User=demo\\eve IP=203.0.113.77 LogonType=3"
+}

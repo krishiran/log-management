@@ -1,0 +1,339 @@
+{
+  "info": {
+    "name": "Log Management Demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "ตัวอย่างเรียก API: ingest (HTTP JSON / batch / ไฟล์) และ search — ตั้งค่าตัวแปรจาก .env ก่อนใช้"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "apiKeyDemoA",
+      "value": "<API_KEYS ของ demoA ใน .env>"
+    },
+    {
+      "key": "apiKeyGlobal",
+      "value": "<API_KEYS ของ * ใน .env>"
+    },
+    {
+      "key": "adminPassword",
+      "value": "<ADMIN_PASSWORD ใน .env>"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Health check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        },
+        "description": "ไม่ต้องล็อกอิน ใช้เช็กว่าระบบพร้อม"
+      }
+    },
+    {
+      "name": "1. Login (admin) — ได้ cookie session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        },
+        "description": "Postman เก็บ cookie ให้อัตโนมัติ ใช้กับคำสั่ง search ด้านล่างที่ไม่ใส่ x-api-key",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"{{adminPassword}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2. Ingest — HTTP API (โจทย์ข้อ 4.3)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKeyDemoA}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/ingest",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "ingest"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tenant\": \"demoA\",\n  \"source\": \"api\",\n  \"event_type\": \"app_login_failed\",\n  \"user\": \"alice\",\n  \"ip\": \"203.0.113.7\",\n  \"reason\": \"wrong_password\",\n  \"@timestamp\": \"2026-09-20T07:20:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "3. Ingest — CrowdStrike (โจทย์ข้อ 4.4)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKeyDemoA}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/ingest",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "ingest"
+          ]
+        },
+        "description": "",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tenant\": \"demoA\",\n  \"source\": \"crowdstrike\",\n  \"event_type\": \"malware_detected\",\n  \"host\": \"WIN10-01\",\n  \"process\": \"powershell.exe\",\n  \"severity\": 8,\n  \"sha256\": \"abc...\",\n  \"action\": \"quarantine\",\n  \"@timestamp\": \"2026-09-20T08:00:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "4. Ingest — Batch (array)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKeyDemoA}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/ingest/batch",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "ingest",
+            "batch"
+          ]
+        },
+        "description": "ทั้งชุดบันทึกใน transaction เดียว ถ้ารายการใดผิดจะไม่บันทึกเลยและบอกลำดับที่ผิด",
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"source\": \"api\",\n    \"event_type\": \"login\",\n    \"user\": \"alice\",\n    \"ip\": \"203.0.113.7\"\n  },\n  {\n    \"source\": \"api\",\n    \"event_type\": \"logout\",\n    \"user\": \"alice\",\n    \"ip\": \"203.0.113.7\"\n  }\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "5. Ingest — AWS CloudTrail ต้นฉบับ (Records)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKeyGlobal}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/ingest/batch",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "ingest",
+            "batch"
+          ]
+        },
+        "description": "ใช้ key global (*) จึงระบุ tenant ใน record ได้",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Records\": [\n    {\n      \"eventTime\": \"2026-09-20T09:10:00Z\",\n      \"eventSource\": \"iam.amazonaws.com\",\n      \"eventName\": \"CreateUser\",\n      \"awsRegion\": \"ap-southeast-1\",\n      \"sourceIPAddress\": \"203.0.113.9\",\n      \"userIdentity\": {\n        \"type\": \"IAMUser\",\n        \"userName\": \"admin\"\n      },\n      \"recipientAccountId\": \"123456789012\",\n      \"tenant\": \"demoB\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "6. Ingest — อัปโหลดไฟล์",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKeyGlobal}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/ingest/file",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "ingest",
+            "file"
+          ]
+        },
+        "description": "เลือกไฟล์ samples/m365_ual.json (หรือ cloudtrail_records.json / windows_events.json)",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "samples/m365_ual.json"
+            },
+            {
+              "key": "tenant",
+              "value": "demoB",
+              "type": "text"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Search — ด้วย API key (เห็นเฉพาะ tenant ของ key)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKeyDemoA}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/logs?q=alice&source=api&timeframe=24h&limit=20",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "logs"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "alice"
+            },
+            {
+              "key": "source",
+              "value": "api"
+            },
+            {
+              "key": "timeframe",
+              "value": "24h"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "8. Search — ด้วย cookie (หลัง Login)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/logs?q=&timeframe=all&severity=5&limit=20",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "logs"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": ""
+            },
+            {
+              "key": "timeframe",
+              "value": "all"
+            },
+            {
+              "key": "severity",
+              "value": "5"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "admin เห็นทุก tenant และกรองด้วย ?tenant=demoB ได้; viewer เห็นเฉพาะ tenant ของตน"
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+[
+  {
+    "EventID": 4625,
+    "Channel": "Security",
+    "Computer": "DC01",
+    "TimeCreated": { "SystemTime": "2026-09-20T11:11:11Z" },
+    "TargetUserName": "eve",
+    "TargetDomainName": "DEMO",
+    "IpAddress": "203.0.113.77",
+    "LogonType": 3
+  },
+  {
+    "EventID": 4624,
+    "Channel": "Security",
+    "Computer": "DC01",
+    "TimeCreated": { "SystemTime": "2026-09-20T11:12:00Z" },
+    "TargetUserName": "alice",
+    "TargetDomainName": "DEMO",
+    "IpAddress": "10.0.1.25",
+    "LogonType": 2
+  },
+  {
+    "EventID": 4740,
+    "Channel": "Security",
+    "Computer": "DC01",
+    "TimeCreated": { "SystemTime": "2026-09-20T11:14:30Z" },
+    "TargetUserName": "eve",
+    "TargetDomainName": "DEMO",
+    "IpAddress": "203.0.113.77"
+  }
+]
